@@ -1,0 +1,56 @@
+---
+title: "R Markdown Presentation & Plotly"
+author: "Rajesh Solanki"
+date: "October 11, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Instructions
+
+Create a web page presentation using R Markdown that features a plot created with Plotly. Host your webpage on either GitHub Pages, RPubs, or NeoCities. Your webpage must contain the date that you created the document, and it must contain a plot created with Plotly. We would love to see you show off your creativity!
+
+# Load data file
+
+```{r}
+library(plotly)
+library(dplyr)
+mydata <- read.csv("datafile.csv", header=TRUE, sep=",")
+```
+# Create data frame
+```{r}
+mydata <- data.frame(mydata)
+names(mydata)<-c("State", "Population", "Poverty(%)")
+mydata <- data.frame(State = mydata$State, Population = as.vector(mydata$Population), Pov= as.vector(mydata$`Poverty(%)`))
+mydata$Abb <- with(mydata, paste(state.abb))
+```
+
+# Create hover text
+```{r}
+mydata$hover <- with(mydata, paste(State, '<br>', "Population:", Population,"Million",'<br>',"Poverty:",Pov,"%"))
+```
+# Make state borders red and Set up some mapping options
+```{r}
+borders <- list(color = toRGB("red"))
+map_options <- list(
+  scope = 'usa',
+  projection = list(type = 'albers usa'),
+  showlakes = TRUE,
+  lakecolor = toRGB('white')
+)
+```
+# Finally plot the map
+
+```{r}
+plot_ly(z = mydata$Population, text = mydata$hover, locations = mydata$Abb, 
+        type = 'choropleth', locationmode = 'USA-states', 
+        color = mydata$Population, colors = 'Blues', marker = list(line = borders)) %>%
+  layout(title = 'US Population and % poverty in each state  as per Census 2017 Estimate', 
+         geo = map_options)
+```
+
+
+
